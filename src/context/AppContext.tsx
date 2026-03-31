@@ -1,87 +1,91 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import type { JobApplication, Resume, ApplicationStatus, StageEntry } from '../types';
+import { createContext, useContext, type ReactNode, useState, useEffect, useCallback } from 'react';
+import type { JobApplication, Resume, ApplicationStatus } from '../types';
+
+const API = 'http://localhost:3001/api';
 
 interface AppContextType {
   applications: JobApplication[];
   resumes: Resume[];
-  addApplication: (app: Omit<JobApplication, 'id' | 'stages' | 'createdAt' | 'updatedAt'>) => void;
-  updateApplication: (id: string, data: Partial<JobApplication>) => void;
-  deleteApplication: (id: string) => void;
-  addStage: (applicationId: string, status: ApplicationStatus, notes: string) => void;
-  addResume: (resume: Omit<Resume, 'id' | 'uploadedAt'>) => void;
-  deleteResume: (id: string) => void;
+  loading: boolean;
+  addApplication: (app: Omit<JobApplication, 'id' | 'stages' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateApplication: (id: string, data: Partial<JobApplication>) => Promise<void>;
+  deleteApplication: (id: string) => Promise<void>;
+  addStage: (applicationId: string, status: ApplicationStatus, notes: string) => Promise<void>;
+  addResume: (resume: Omit<Resume, 'id' | 'uploadedAt'>) => Promise<void>;
+  deleteResume: (id: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [applications, setApplications] = useLocalStorage<JobApplication[]>('job-tracker-apps', []);
-  const [resumes, setResumes] = useLocalStorage<Resume[]>('job-tracker-resumes', []);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addApplication = (app: Omit<JobApplication, 'id' | 'stages' | 'createdAt' | 'updatedAt'>) => {
-    const now = new Date().toISOString();
-    const id = uuidv4();
-    const initialStage: StageEntry = {
-      id: uuidv4(),
-      status: app.currentStatus,
-      date: now,
-      notes: '',
-    };
-    const newApp: JobApplication = {
-      ...app,
-      id,
-      stages: [initialStage],
-      createdAt: now,
-      updatedAt: now,
-    };
-    setApplications((prev) => [newApp, ...prev]);
+  const fetchAll = useCallback(async () => {
+    try {
+      const [appsRes, resumesRes] = await Promise.all([
+        fetch(`${API}/applications`),
+        fetch(`${API}/resumes`),
+      ]);
+      setApplications(await appsRes.json());
+      setResumes(await resumesRes.json());
+    } catch (err) {
+      console.error('Failed to fetch data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const addApplication = async (app: Omit<JobApplication, 'id' | 'stages' | 'createdAt' | 'updatedAt'>) => {
+    const res = await fetch(`${API}/applications`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(app),
+    });
+    const created = await res.json();
+    setApplications((prev) => [created, ...prev]);
   };
 
-  const updateApplication = (id: string, data: Partial<JobApplication>) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === id ? { ...app, ...data, updatedAt: new Date().toISOString() } : app
-      )
-    );
+  const updateApplication = async (id: string, data: Partial<JobApplication>) => {
+    const res = await fetch(`${API}/applications/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const updated = await res.json();
+    setApplications((prev) => prev.map((a) => (a.id === id ? updated : a)));
   };
 
-  const deleteApplication = (id: string) => {
-    setApplications((prev) => prev.filter((app) => app.id !== id));
+  const deleteApplication = async (id: string) => {
+    await fetch(`${API}/applications/${id}`, { method: 'DELETE' });
+    setApplications((prev) => prev.filter((a) => a.id !== id));
   };
 
-  const addStage = (applicationId: string, status: ApplicationStatus, notes: string) => {
-    const stage: StageEntry = {
-      id: uuidv4(),
-      status,
-      date: new Date().toISOString(),
-      notes,
-    };
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === applicationId
-          ? {
-              ...app,
-              currentStatus: status,
-              stages: [...app.stages, stage],
-              updatedAt: new Date().toISOString(),
-            }
-          : app
-      )
-    );
+  const addStage = async (applicationId: string, status: ApplicationStatus, notes: string) => {
+    const res = await fetch(`${API}/applications/${applicationId}/stages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, notes }),
+    });
+    const updated = await res.json();
+    setApplications((prev) => prev.map((a) => (a.id === applicationId ? updated : a)));
   };
 
-  const addResume = (resume: Omit<Resume, 'id' | 'uploadedAt'>) => {
-    const newResume: Resume = {
-      ...resume,
-      id: uuidv4(),
-      uploadedAt: new Date().toISOString(),
-    };
-    setResumes((prev) => [newResume, ...prev]);
+  const addResume = async (resume: Omit<Resume, 'id' | 'uploadedAt'>) => {
+    const res = await fetch(`${API}/resumes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(resume),
+    });
+    const created = await res.json();
+    setResumes((prev) => [created, ...prev]);
   };
 
-  const deleteResume = (id: string) => {
+  const deleteResume = async (id: string) => {
+    await fetch(`${API}/resumes/${id}`, { method: 'DELETE' });
     setResumes((prev) => prev.filter((r) => r.id !== id));
   };
 
@@ -90,6 +94,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         applications,
         resumes,
+        loading,
         addApplication,
         updateApplication,
         deleteApplication,

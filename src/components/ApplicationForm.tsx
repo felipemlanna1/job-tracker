@@ -26,9 +26,9 @@ export default function ApplicationForm({ onClose }: Props) {
   const { addApplication, resumes } = useApp();
   const [form, setForm] = useState(initialForm);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addApplication(form);
+    await addApplication(form);
     onClose();
   };
 

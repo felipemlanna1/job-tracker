@@ -17,8 +17,8 @@ export default function StageTimeline({ applicationId, stages }: Props) {
   const [newStatus, setNewStatus] = useState<ApplicationStatus>('phone_screen');
   const [newNotes, setNewNotes] = useState('');
 
-  const handleAdd = () => {
-    addStage(applicationId, newStatus, newNotes);
+  const handleAdd = async () => {
+    await addStage(applicationId, newStatus, newNotes);
     setNewNotes('');
     setShowForm(false);
   };
