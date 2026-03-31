@@ -32,9 +32,9 @@ app.post('/api/applications', (req, res) => {
   const b = req.body;
 
   db.prepare(`
-    INSERT INTO applications (id, company, position, location, type, url, salary, currentStatus, resumeId, coverLetter, notes, contactName, contactEmail, createdAt, updatedAt)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(id, b.company, b.position, b.location || '', b.type || 'remote', b.url || '', b.salary || '', b.currentStatus || 'applied', b.resumeId || null, b.coverLetter || '', b.notes || '', b.contactName || '', b.contactEmail || '', now, now);
+    INSERT INTO applications (id, company, position, location, type, url, salaryMarket, salaryRequested, salaryBudget, currentStatus, resumeId, coverLetter, notes, contactName, contactEmail, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, b.company, b.position, b.location || '', b.type || 'remote', b.url || '', b.salaryMarket || '', b.salaryRequested || '', b.salaryBudget || '', b.currentStatus || 'applied', b.resumeId || null, b.coverLetter || '', b.notes || '', b.contactName || '', b.contactEmail || '', now, now);
 
   const stageId = randomUUID();
   db.prepare('INSERT INTO stages (id, applicationId, status, date, notes) VALUES (?, ?, ?, ?, ?)').run(stageId, id, b.currentStatus || 'applied', now, '');
@@ -47,7 +47,7 @@ app.post('/api/applications', (req, res) => {
 app.put('/api/applications/:id', (req, res) => {
   const b = req.body;
   const now = new Date().toISOString();
-  const fields = ['company', 'position', 'location', 'type', 'url', 'salary', 'currentStatus', 'resumeId', 'coverLetter', 'notes', 'contactName', 'contactEmail'];
+  const fields = ['company', 'position', 'location', 'type', 'url', 'salaryMarket', 'salaryRequested', 'salaryBudget', 'currentStatus', 'resumeId', 'coverLetter', 'notes', 'contactName', 'contactEmail'];
   const sets = fields.filter((f) => b[f] !== undefined).map((f) => `${f} = @${f}`);
   if (sets.length === 0) return res.status(400).json({ error: 'No fields' });
 

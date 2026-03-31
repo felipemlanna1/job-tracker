@@ -13,7 +13,9 @@ const initialForm = {
   location: '',
   type: 'remote' as const,
   url: '',
-  salary: '',
+  salaryMarket: '',
+  salaryRequested: '',
+  salaryBudget: '',
   currentStatus: 'applied' as ApplicationStatus,
   resumeId: null as string | null,
   coverLetter: '',
@@ -68,7 +70,7 @@ export default function ApplicationForm({ onClose }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Localizacao</label>
               <input
@@ -90,13 +92,34 @@ export default function ApplicationForm({ onClose }: Props) {
                 <option value="onsite">Presencial</option>
               </select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Salario</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Margem na Internet</label>
               <input
-                value={form.salary}
-                onChange={(e) => set('salary', e.target.value)}
+                value={form.salaryMarket}
+                onChange={(e) => set('salaryMarket', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                placeholder="Ex: R$ 12k - 18k"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Valor Pedido</label>
+              <input
+                value={form.salaryRequested}
+                onChange={(e) => set('salaryRequested', e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
                 placeholder="Ex: R$ 15.000"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Budget Passado</label>
+              <input
+                value={form.salaryBudget}
+                onChange={(e) => set('salaryBudget', e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                placeholder="Ex: R$ 14.000"
               />
             </div>
           </div>

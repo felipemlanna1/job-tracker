@@ -33,7 +33,9 @@ export interface JobApplication {
   location: string;
   type: 'remote' | 'hybrid' | 'onsite';
   url: string;
-  salary: string;
+  salaryMarket: string;
+  salaryRequested: string;
+  salaryBudget: string;
   currentStatus: ApplicationStatus;
   stages: StageEntry[];
   resumeId: string | null;

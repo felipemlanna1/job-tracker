@@ -62,7 +62,7 @@ export default function ApplicationDetail() {
           <StatusBadge status={app.currentStatus} />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
           <div>
             <p className="text-xs text-gray-500 uppercase font-semibold">Localizacao</p>
             <p className="text-sm text-gray-900 mt-0.5">{app.location || '-'}</p>
@@ -72,16 +72,29 @@ export default function ApplicationDetail() {
             <p className="text-sm text-gray-900 mt-0.5">{TYPE_LABELS[app.type]}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-semibold">Salario</p>
-            <p className="text-sm text-gray-900 mt-0.5">{app.salary || '-'}</p>
-          </div>
-          <div>
             <p className="text-xs text-gray-500 uppercase font-semibold">Criada em</p>
             <p className="text-sm text-gray-900 mt-0.5">
               {format(new Date(app.createdAt), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
             </p>
           </div>
         </div>
+
+        {(app.salaryMarket || app.salaryRequested || app.salaryBudget) && (
+          <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100">
+            <div>
+              <p className="text-xs text-gray-500 uppercase font-semibold">Margem na Internet</p>
+              <p className="text-sm text-gray-900 mt-0.5">{app.salaryMarket || '-'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase font-semibold">Valor Pedido</p>
+              <p className="text-sm text-gray-900 mt-0.5">{app.salaryRequested || '-'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase font-semibold">Budget Passado</p>
+              <p className="text-sm text-gray-900 mt-0.5">{app.salaryBudget || '-'}</p>
+            </div>
+          </div>
+        )}
 
         {app.url && (
           <a
